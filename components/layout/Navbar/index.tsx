@@ -13,7 +13,7 @@ interface NavItem {
 const navItems: NavItem[] = [
     { name: 'Beranda', href: '/' },
     { name: 'Tentang', href: '/tentang' },
-    { name: 'Produk', href: '/produk' },
+    { name: 'Produk', href: '/ternak' },
     { name: 'Berita', href: '/artikel' },
     { name: 'Kontak', href: '/kontak' },
 ];

@@ -83,7 +83,7 @@ export default function ArtikelCard({ artikel }: ArtikelCardProps) {
                         </div>
                         
                         <div className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-xs font-semibold px-4 py-1.5 rounded-full transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-md">
-                            Baca Artikel →
+                            Baca Artikel
                         </div>
                     </div>
                 </div>
