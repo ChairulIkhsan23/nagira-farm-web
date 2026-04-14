@@ -1,7 +1,7 @@
 'use client';
 
-import SocialIcons from './SocialIcons';
-import { SocialMedia } from './types';
+import SocialIcons from '../../ui/SocialIcons';
+import { SocialMedia } from '@/types';
 
 interface FooterBottomProps {
   companyName: string;

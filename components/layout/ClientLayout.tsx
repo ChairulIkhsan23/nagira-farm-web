@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import Navbar from './Navbar';
+import Header from './Header';
 import Footer from './Footer';
 
 interface ClientLayoutProps {
@@ -11,7 +11,7 @@ interface ClientLayoutProps {
 export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      <Header />
       <main className="grow">
         {children}
       </main>

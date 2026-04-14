@@ -5,12 +5,12 @@ import FooterBrand from './FooterBrand';
 import FooterContact from './FooterContact';
 import FooterLinks from './FooterLinks';
 import FooterBottom from './FooterBottom';
-import { FooterProps } from './types';
+import { FooterProps } from '@/types';
 import {
   DEFAULT_CONTACT_INFO,
   DEFAULT_SECTIONS,
   DEFAULT_SOCIAL_MEDIA
-} from './constants';
+} from '@/constants';
 
 export default function Footer({
   companyName = 'Nagira Farm',
