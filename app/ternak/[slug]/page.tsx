@@ -77,7 +77,7 @@ export default function TernakDetailPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-green-900">
+            <div className="min-h-screen flex items-center justify-center bg-green-900 pt-20">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-200 mx-auto"></div>
                     <p className="mt-4 text-white">Memuat data ternak...</p>
@@ -88,7 +88,7 @@ export default function TernakDetailPage() {
 
     if (error || !ternak) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-green-900">
+            <div className="min-h-screen flex items-center justify-center bg-green-900 pt-20">
                 <div className="text-red-400 text-center">
                     <p>{error || 'Ternak tidak ditemukan'}</p>
                     <Link href="/ternak" className="text-yellow-200 hover:text-yellow-300 mt-4 inline-block">
@@ -100,8 +100,9 @@ export default function TernakDetailPage() {
     }
 
     return (
-        <main className="min-h-screen bg-green-900">
-            <section className="relative py-16 overflow-hidden">
+        <main className="min-h-screen bg-green-900 flex flex-col">
+            {/* Hero Section - padding bottom lebih besar biar ada ruang buat nimpa */}
+            <section className="relative pt-32 pb-48 md:pt-40 md:pb-56 overflow-hidden">
                 <div
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{ backgroundImage: "url('/images/bg-1.png')" }}
@@ -120,7 +121,8 @@ export default function TernakDetailPage() {
                 </div>
             </section>
 
-            <div className="container mx-auto px-4 py-8 max-w-5xl -mt-12 relative z-10">
+            {/* Content Container - pake margin negatif biar nimpa background kayak preview artikel */}
+            <div className="container mx-auto px-4 max-w-5xl -mt-32 mb-12 relative z-10">
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     <div className="md:flex">
                         <div className="md:w-1/2 relative h-80 md:h-auto bg-gradient-to-br from-green-400 to-emerald-500">
@@ -188,7 +190,7 @@ export default function TernakDetailPage() {
                     </div>
                 </div>
 
-                <div className="mt-8 text-center">
+                <div className="mt-8 text-center pb-12">
                     <Link 
                         href="/ternak" 
                         className="inline-flex items-center gap-2 text-yellow-200 hover:text-yellow-300 font-medium transition-colors"

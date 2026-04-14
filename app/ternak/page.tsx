@@ -1,12 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { ternakApi, Ternak } from '@/lib/api/endpoints/ternak';
+import TernakCard from '@/components/ternak/TernakCard';
 
 export default function TernakListPage() {
-    const [ternaks, setTernaks] = useState<Ternak[]>([]);
     const [allTernaks, setAllTernaks] = useState<Ternak[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -118,24 +116,6 @@ export default function TernakListPage() {
         setCurrentPage(1);
     };
 
-    const getStatusBadge = (status: string) => {
-        if (status === 'aktif') {
-            return <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Aktif</span>;
-        } else if (status === 'mati') {
-            return <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">Mati</span>;
-        } else {
-            return <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">Terjual</span>;
-        }
-    };
-
-    const getGenderBadge = (gender: string) => {
-        if (gender === 'jantan') {
-            return <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">♂ Jantan</span>;
-        } else {
-            return <span className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded-full">♀ Betina</span>;
-        }
-    };
-
     const getKategoriDisplay = (kategori: string) => {
         const map: Record<string, string> = {
             'regular': 'Regular',
@@ -147,7 +127,7 @@ export default function TernakListPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-green-900">
+            <div className="min-h-screen flex items-center justify-center bg-green-900 pt-20">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
                     <p className="mt-4 text-white">Memuat data ternak...</p>
@@ -158,7 +138,7 @@ export default function TernakListPage() {
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-green-900">
+            <div className="min-h-screen flex items-center justify-center bg-green-900 pt-20">
                 <div className="text-red-400 text-center">
                     <p>{error}</p>
                     <button 
@@ -173,8 +153,8 @@ export default function TernakListPage() {
     }
 
     return (
-        <main className="min-h-screen bg-green-900">
-            <section className="py-16 md:py-20">
+        <main className="min-h-screen bg-green-900 pt-20 md:pt-24">
+            <section className="py-12 md:py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
                         Koleksi <span className="text-white italic">Ternak Kami</span>
@@ -217,78 +197,78 @@ export default function TernakListPage() {
             </div>
 
             {/* Filter Section */}
-<div className="container mx-auto px-4 max-w-7xl mb-8">
-    <div className="flex flex-wrap items-center justify-center gap-3">
-        <select
-            value={selectedKategori}
-            onChange={(e) => setSelectedKategori(e.target.value)}
-            className="px-5 py-2.5 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg text-white text-sm focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 cursor-pointer transition-all duration-300 appearance-none"
-            style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 12px center',
-                backgroundSize: '16px',
-                paddingRight: '32px'
-            }}
-        >
-            <option value="" className="text-gray-800 bg-green-900">Kategori</option>
-            {kategoriOptions.map((opt) => (
-                <option key={opt} value={opt} className="text-gray-800 bg-green-900">
-                    {getKategoriDisplay(opt)}
-                </option>
-            ))}
-        </select>
+            <div className="container mx-auto px-4 max-w-7xl mb-8">
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                    <select
+                        value={selectedKategori}
+                        onChange={(e) => setSelectedKategori(e.target.value)}
+                        className="px-5 py-2.5 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg text-white text-sm focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 cursor-pointer transition-all duration-300 appearance-none"
+                        style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 12px center',
+                            backgroundSize: '16px',
+                            paddingRight: '32px'
+                        }}
+                    >
+                        <option value="" className="text-gray-800 bg-green-900">Kategori</option>
+                        {kategoriOptions.map((opt) => (
+                            <option key={opt} value={opt} className="text-gray-800 bg-green-900">
+                                {getKategoriDisplay(opt)}
+                            </option>
+                        ))}
+                    </select>
 
-        <select
-            value={selectedJenis}
-            onChange={(e) => setSelectedJenis(e.target.value)}
-            className="px-5 py-2.5 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg text-white text-sm focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 cursor-pointer transition-all duration-300 appearance-none"
-            style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 12px center',
-                backgroundSize: '16px',
-                paddingRight: '32px'
-            }}
-        >
-            <option value="" className="text-gray-800 bg-green-900">Jenis</option>
-            {jenisOptions.map((opt) => (
-                <option key={opt} value={opt} className="text-gray-800 bg-green-900">{opt}</option>
-            ))}
-        </select>
+                    <select
+                        value={selectedJenis}
+                        onChange={(e) => setSelectedJenis(e.target.value)}
+                        className="px-5 py-2.5 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg text-white text-sm focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 cursor-pointer transition-all duration-300 appearance-none"
+                        style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 12px center',
+                            backgroundSize: '16px',
+                            paddingRight: '32px'
+                        }}
+                    >
+                        <option value="" className="text-gray-800 bg-green-900">Jenis</option>
+                        {jenisOptions.map((opt) => (
+                            <option key={opt} value={opt} className="text-gray-800 bg-green-900">{opt}</option>
+                        ))}
+                    </select>
 
-        <select
-            value={selectedTanggal}
-            onChange={(e) => setSelectedTanggal(e.target.value)}
-            className="px-5 py-2.5 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg text-white text-sm focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 cursor-pointer transition-all duration-300 appearance-none"
-            style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 12px center',
-                backgroundSize: '16px',
-                paddingRight: '32px'
-            }}
-        >
-            <option value="" className="text-gray-800 bg-green-900">Tanggal masuk</option>
-            <option value="7" className="text-gray-800 bg-green-900">7 Hari Terakhir</option>
-            <option value="30" className="text-gray-800 bg-green-900">30 Hari Terakhir</option>
-            <option value="90" className="text-gray-800 bg-green-900">90 Hari Terakhir</option>
-        </select>
+                    <select
+                        value={selectedTanggal}
+                        onChange={(e) => setSelectedTanggal(e.target.value)}
+                        className="px-5 py-2.5 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg text-white text-sm focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 cursor-pointer transition-all duration-300 appearance-none"
+                        style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 12px center',
+                            backgroundSize: '16px',
+                            paddingRight: '32px'
+                        }}
+                    >
+                        <option value="" className="text-gray-800 bg-green-900">Tanggal masuk</option>
+                        <option value="7" className="text-gray-800 bg-green-900">7 Hari Terakhir</option>
+                        <option value="30" className="text-gray-800 bg-green-900">30 Hari Terakhir</option>
+                        <option value="90" className="text-gray-800 bg-green-900">90 Hari Terakhir</option>
+                    </select>
 
-        {/* Reset Filter Button */}
-        {(selectedKategori || selectedJenis || selectedTanggal || searchQuery) && (
-            <button
-                onClick={resetFilters}
-                className="px-5 py-2.5 bg-red-500/80 hover:bg-red-600 backdrop-blur-sm text-white text-sm rounded-lg transition-all duration-300 flex items-center gap-2"
-            >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Reset Filter
-            </button>
-        )}
-    </div>
-</div>
+                    {/* Reset Filter Button */}
+                    {(selectedKategori || selectedJenis || selectedTanggal || searchQuery) && (
+                        <button
+                            onClick={resetFilters}
+                            className="px-5 py-2.5 bg-red-500/80 hover:bg-red-600 backdrop-blur-sm text-white text-sm rounded-lg transition-all duration-300 flex items-center gap-2"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Reset Filter
+                        </button>
+                    )}
+                </div>
+            </div>
 
             {/* DAFTAR TERNAK SECTION */}
             <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -312,154 +292,96 @@ export default function TernakListPage() {
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {currentTernaks.map((ternak) => (
-                                <Link 
-                                    key={ternak.id} 
-                                    href={`/ternak/${ternak.slug}`}
-                                    className="group"
-                                >
-                                    <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                                        <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-green-400 to-emerald-500">
-                                            {ternak.foto ? (
-                                                <Image
-                                                    src={ternak.foto}
-                                                    alt={ternak.nama_ternak || ternak.kode_ternak}
-                                                    fill
-                                                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                                                />
-                                            ) : (
-                                                <div className="flex items-center justify-center h-full text-white/50">
-                                                    <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                                    </svg>
-                                                </div>
-                                            )}
-                                        </div>
-                                        
-                                        <div className="p-4 flex-1 flex flex-col">
-                                            <div className="flex gap-1.5 mb-3 w-full">
-                                                <div className="flex-1 h-1 rounded-full bg-green-700 group-hover:bg-green-600 transition-colors"></div>
-                                                <div className="flex-1 h-1 rounded-full bg-lime-400 group-hover:bg-lime-500 transition-colors"></div>
-                                            </div>
-
-                                            <div className="mb-2">
-                                                <p className="text-xs text-gray-400">{ternak.kode_ternak}</p>
-                                                <h2 className="text-base font-bold text-gray-800 group-hover:text-green-700 transition-colors line-clamp-1">
-                                                    {ternak.nama_ternak || 'Tanpa Nama'}
-                                                </h2>
-                                            </div>
-                                            
-                                            <div className="space-y-1 text-sm text-gray-600 mb-3">
-                                                <div className="flex justify-between">
-                                                    <span>Jenis:</span>
-                                                    <span className="font-medium">{ternak.jenis_ternak}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span>Bobot:</span>
-                                                    <span className="font-medium text-green-600">{ternak.bobot} kg</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="flex gap-2 mt-auto pt-3 border-t border-gray-100">
-                                                {getGenderBadge(ternak.jenis_kelamin)}
-                                                {getStatusBadge(ternak.status_aktif)}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
+                                <TernakCard key={ternak.id} ternak={ternak} />
                             ))}
                         </div>
 
                         {/* PAGINATION - MAKS 3 NOMOR */}
-                            {totalPages > 1 && (
-                                <div className="flex justify-center items-center gap-4 mt-12">
-                                    <button
-                                        onClick={handlePrevPage}
-                                        disabled={currentPage === 1}
-                                        className="px-6 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400 hover:text-gray-800 transition-all duration-300"
-                                    >
-                                        Sebelumnya
-                                    </button>
-                                    
-                                    <div className="flex gap-2">
-                                        {(() => {
-                                            const pages = [];
-                                            const maxVisible = 3;
+                        {totalPages > 1 && (
+                            <div className="flex justify-center items-center gap-4 mt-12">
+                                <button
+                                    onClick={handlePrevPage}
+                                    disabled={currentPage === 1}
+                                    className="px-6 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400 hover:text-gray-800 transition-all duration-300"
+                                >
+                                    Sebelumnya
+                                </button>
+                                
+                                <div className="flex gap-2">
+                                    {(() => {
+                                        const pages = [];
+                                        const maxVisible = 3;
+                                        
+                                        if (totalPages <= maxVisible) {
+                                            for (let i = 1; i <= totalPages; i++) {
+                                                pages.push(i);
+                                            }
+                                        } else {
+                                            pages.push(1);
                                             
-                                            if (totalPages <= maxVisible) {
-                                                // Tampilkan semua halaman
-                                                for (let i = 1; i <= totalPages; i++) {
+                                            if (currentPage > 3) {
+                                                pages.push('...');
+                                            }
+                                            
+                                            let start = Math.max(2, currentPage - 1);
+                                            let end = Math.min(totalPages - 1, currentPage + 1);
+                                            
+                                            if (currentPage <= 3) {
+                                                start = 2;
+                                                end = 3;
+                                            }
+                                            
+                                            if (currentPage >= totalPages - 2) {
+                                                start = totalPages - 2;
+                                                end = totalPages - 1;
+                                            }
+                                            
+                                            for (let i = start; i <= end; i++) {
+                                                if (i !== 1 && i !== totalPages) {
                                                     pages.push(i);
-                                                }
-                                            } else {
-                                                // Selalu tampilkan halaman 1
-                                                pages.push(1);
-                                                
-                                                if (currentPage > 3) {
-                                                    pages.push('...');
-                                                }
-                                                
-                                                // Tampilkan halaman di sekitar currentPage
-                                                let start = Math.max(2, currentPage - 1);
-                                                let end = Math.min(totalPages - 1, currentPage + 1);
-                                                
-                                                if (currentPage <= 3) {
-                                                    start = 2;
-                                                    end = 3;
-                                                }
-                                                
-                                                if (currentPage >= totalPages - 2) {
-                                                    start = totalPages - 2;
-                                                    end = totalPages - 1;
-                                                }
-                                                
-                                                for (let i = start; i <= end; i++) {
-                                                    if (i !== 1 && i !== totalPages) {
-                                                        pages.push(i);
-                                                    }
-                                                }
-                                                
-                                                if (currentPage < totalPages - 2) {
-                                                    pages.push('...');
-                                                }
-                                                
-                                                // Tampilkan halaman terakhir
-                                                if (totalPages !== 1) {
-                                                    pages.push(totalPages);
                                                 }
                                             }
                                             
-                                            return pages.map((page, idx) => (
-                                                page === '...' ? (
-                                                    <span key={`dots-${idx}`} className="w-10 h-10 flex items-center justify-center text-white">
-                                                        ...
-                                                    </span>
-                                                ) : (
-                                                    <button
-                                                        key={page}
-                                                        onClick={() => setCurrentPage(page as number)}
-                                                        className={`w-10 h-10 rounded-lg transition-all duration-300 ${
-                                                            currentPage === page
-                                                                ? 'bg-yellow-400 text-gray-800 font-bold'
-                                                                : 'bg-white/10 backdrop-blur-sm text-white hover:bg-yellow-400 hover:text-gray-800'
-                                                        }`}
-                                                    >
-                                                        {page}
-                                                    </button>
-                                                )
-                                            ));
-                                        })()}
-                                    </div>
-                                    
-                                    <button
-                                        onClick={handleNextPage}
-                                        disabled={currentPage === totalPages}
-                                        className="px-6 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400 hover:text-gray-800 transition-all duration-300"
-                                    >
-                                        Selanjutnya
-                                    </button>
+                                            if (currentPage < totalPages - 2) {
+                                                pages.push('...');
+                                            }
+                                            
+                                            if (totalPages !== 1) {
+                                                pages.push(totalPages);
+                                            }
+                                        }
+                                        
+                                        return pages.map((page, idx) => (
+                                            page === '...' ? (
+                                                <span key={`dots-${idx}`} className="w-10 h-10 flex items-center justify-center text-white">
+                                                    ...
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    key={page}
+                                                    onClick={() => setCurrentPage(page as number)}
+                                                    className={`w-10 h-10 rounded-lg transition-all duration-300 ${
+                                                        currentPage === page
+                                                            ? 'bg-yellow-400 text-gray-800 font-bold'
+                                                            : 'bg-white/10 backdrop-blur-sm text-white hover:bg-yellow-400 hover:text-gray-800'
+                                                    }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            )
+                                        ));
+                                    })()}
                                 </div>
-                            )}
-                        {/* Info halaman */}
+                                
+                                <button
+                                    onClick={handleNextPage}
+                                    disabled={currentPage === totalPages}
+                                    className="px-6 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400 hover:text-gray-800 transition-all duration-300"
+                                >
+                                    Selanjutnya
+                                </button>
+                            </div>
+                        )}
                         {totalPages > 1 && (
                             <div className="text-center mt-4 text-white/50 text-sm">
                                 Halaman {currentPage} dari {totalPages}

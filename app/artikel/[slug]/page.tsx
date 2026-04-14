@@ -177,14 +177,14 @@ export default function ArtikelDetailPage() {
 
                 {/* Footer */}
                 <footer className="mt-8 pt-6 border-t border-gray-200">
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="mt-8 text-center pb-12">
                         <Link 
                             href="/artikel" 
-                            className="text-green-700 hover:text-green-800 flex items-center gap-2 font-medium"
+                            className="inline-flex items-center gap-2 text-green-700 hover:text-lime-400 font-medium transition-colors"
                         >
-                            Kembali ke Insight
+                            Kembali ke daftar artikel
                         </Link>
-                    </div>
+                </div>
                 </footer>
             </div>
         </article>
