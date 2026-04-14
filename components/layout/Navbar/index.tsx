@@ -14,7 +14,7 @@ const navItems: NavItem[] = [
     { name: 'Beranda', href: '/' },
     { name: 'Tentang', href: '/tentang' },
     { name: 'Produk', href: '/produk' },
-    { name: 'Berita', href: '/berita' },
+    { name: 'Berita', href: '/artikel' },
     { name: 'Kontak', href: '/kontak' },
 ];
 
