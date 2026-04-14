@@ -1,6 +1,6 @@
 'use client';
 
-import { ContactInfo } from './types';
+import { ContactInfo } from '@/types';
 
 interface FooterContactProps {
   contactInfo: ContactInfo;
