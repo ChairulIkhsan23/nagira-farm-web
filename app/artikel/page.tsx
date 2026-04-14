@@ -97,8 +97,8 @@ export default function ArtikelPage() {
 
     return (
         <main className="min-h-screen bg-green-900">
-            {/* Hero Section */}
-            <section className="relative py-24 md:py-32 overflow-hidden">
+            {/* Hero Section - diperbesar padding bottomnya */}
+            <section className="relative pt-32 pb-32 md:pt-40 md:pb-40 overflow-hidden">
                 <div
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{ backgroundImage: "url('/images/bg-1.png')" }}
@@ -159,9 +159,9 @@ export default function ArtikelPage() {
                 </div>
             </section>
 
-            {/* PREVIEW SECTION - TETAP ADA SELALU */}
+            {/* PREVIEW SECTION - dengan background transparan dan jarak yang pas */}
             {previewArtikels.length > 0 && (
-                <div className="container mx-auto px-4 max-w-5xl -mt-24 mb-12 relative z-10">
+                <div className="container mx-auto px-4 max-w-5xl -mt-16 mb-12 relative z-10">
                     <div className="flex justify-center items-center gap-8">
                         {previewArtikels.map((artikel, index) => (
                             <PreviewArtikelCard 

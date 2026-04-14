@@ -67,17 +67,17 @@ export default function ArtikelDetailPage() {
         return `${minutes} menit`;
     };
 
-     const getImageUrl = (path: string | null): string | null => {
+    const getImageUrl = (path: string | null): string | null => {
         if (!path) return null;
         if (path.startsWith('http')) return path;
         return `http://127.0.0.1:8000/storage/${path}`;
     };
 
-const imageUrl = getImageUrl(artikel?.foto ?? null);
+    const imageUrl = getImageUrl(artikel?.foto ?? null);
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
+            <div className="flex justify-center items-center min-h-screen bg-gray-50 pt-20">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Memuat artikel...</p>
@@ -88,7 +88,7 @@ const imageUrl = getImageUrl(artikel?.foto ?? null);
 
     if (error) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
+            <div className="flex justify-center items-center min-h-screen bg-gray-50 pt-20">
                 <div className="text-red-500 text-center">
                     <p>{error}</p>
                     <Link href="/artikel" className="text-green-600 mt-4 inline-block">
@@ -107,8 +107,8 @@ const imageUrl = getImageUrl(artikel?.foto ?? null);
     const shareText = encodeURIComponent(`${artikel.judul} - ${shareUrl}`);
 
     return (
-        <article className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <article className="min-h-screen bg-gray-50 pt-20 md:pt-24">
+            <div className="container mx-auto px-4 py-8 max-w-4xl">
                 {/* Breadcrumb */}
                 <div className="mb-6 text-sm text-gray-500">
                     <Link href="/" className="hover:text-green-600">Home</Link>
@@ -145,17 +145,17 @@ const imageUrl = getImageUrl(artikel?.foto ?? null);
                 {/* Content wrapper with white background */}
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                     {/* Featured Image */}
-                            {imageUrl && (
-                                <div className="relative h-96 w-full">
-                                    <Image
-                                        src={imageUrl}
-                                        alt={artikel.judul}
-                                        fill
-                                        unoptimized
-                                        className="object-cover"
-                                    />
-                                </div>
-                            )}
+                    {imageUrl && (
+                        <div className="relative h-96 w-full">
+                            <Image
+                                src={imageUrl}
+                                alt={artikel.judul}
+                                fill
+                                unoptimized
+                                className="object-cover"
+                            />
+                        </div>
+                    )}
                     {/* Content body */}
                     <div className="p-6 md:p-8">
                         {artikel.excerpt && (
