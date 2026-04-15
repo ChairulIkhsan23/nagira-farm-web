@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { Artikel } from '@/lib/api/endpoints/artikel';
 
 interface ArtikelCardProps {
@@ -33,11 +33,10 @@ export default function ArtikelCard({ artikel }: ArtikelCardProps) {
                 <div className="p-4 pb-0">
                     <div className="relative h-48 w-full overflow-hidden rounded-xl bg-gradient-to-br from-green-400 to-emerald-500">
                         {imageUrl ? ( 
-                            <Image
+                            <OptimizedImage
                                 src={imageUrl}
                                 alt={artikel.judul}
                                 fill
-                                unoptimized
                                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                             />
                         ) : (

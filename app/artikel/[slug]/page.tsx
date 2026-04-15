@@ -1,9 +1,9 @@
-// app/artikel/[slug]/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
-import Image from 'next/image';
+// Hapus import Image, ganti dengan OptimizedImage
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
 import { artikelApi, Artikel } from '@/lib/api/endpoints/artikel';
 
@@ -147,11 +147,10 @@ export default function ArtikelDetailPage() {
                     {/* Featured Image */}
                     {imageUrl && (
                         <div className="relative h-96 w-full">
-                            <Image
+                            <OptimizedImage
                                 src={imageUrl}
                                 alt={artikel.judul}
                                 fill
-                                unoptimized
                                 className="object-cover"
                             />
                         </div>
