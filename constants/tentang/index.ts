@@ -1,0 +1,5 @@
+export { values } from './values'
+export { team } from './team'
+export { achievements } from './achievements'
+export { testimonials } from './testimonials'
+export { partners } from './partners'
