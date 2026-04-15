@@ -1,8 +1,31 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ternakApi, Ternak } from '@/lib/api/endpoints/ternak';
+import { ternakApi, Ternak, KategoriTernak } from '@/lib/api/endpoints/ternak';
 import TernakCard from '@/components/ternak/TernakCard';
+import SearchBar from '@/components/ui/SearchBar';
+import Pagination from '@/components/ui/Pagination';
+
+// Helper function untuk mendapatkan nilai kategori sebagai string
+const getKategoriString = (kategori: Ternak['kategori']): string => {
+    if (!kategori) return '';
+    if (typeof kategori === 'string') return kategori;
+    return kategori.value;
+};
+
+// Helper function untuk mendapatkan label kategori
+const getKategoriLabel = (kategori: Ternak['kategori']): string => {
+    if (!kategori) return '';
+    if (typeof kategori === 'string') {
+        const map: Record<string, string> = {
+            'regular': 'Regular',
+            'breeding': 'Breeding',
+            'fattening': 'Fattening'
+        };
+        return map[kategori] || kategori;
+    }
+    return kategori.label;
+};
 
 export default function TernakListPage() {
     const [allTernaks, setAllTernaks] = useState<Ternak[]>([]);
@@ -19,49 +42,65 @@ export default function TernakListPage() {
     const [kategoriOptions, setKategoriOptions] = useState<string[]>([]);
     const [jenisOptions, setJenisOptions] = useState<string[]>([]);
 
-    useEffect(() => {
-        const fetchAllTernaks = async () => {
-            try {
-                setLoading(true);
-                let currentPageNum = 1;
-                let lastPage = 1;
-                let allData: Ternak[] = [];
-                
-                do {
-                    const response = await ternakApi.getAll(currentPageNum);
-                    const ternakData: Ternak[] = response.data;
-                    allData = [...allData, ...ternakData];
-                    lastPage = response.meta?.last_page || 1;
-                    currentPageNum++;
-                } while (currentPageNum <= lastPage);
-                
-                setAllTernaks(allData);
-                
-                const uniqueKategori: string[] = [];
-                const uniqueJenis: string[] = [];
-                
-                allData.forEach((t: Ternak) => {
-                    if (t.kategori && !uniqueKategori.includes(t.kategori)) {
-                        uniqueKategori.push(t.kategori);
-                    }
-                    if (t.jenis_ternak && !uniqueJenis.includes(t.jenis_ternak)) {
-                        uniqueJenis.push(t.jenis_ternak);
-                    }
-                });
-                
-                setKategoriOptions(uniqueKategori);
-                setJenisOptions(uniqueJenis);
-            } catch (err) {
-                console.error('Error:', err);
-                setError('Gagal memuat data ternak');
-                setAllTernaks([]);
-            } finally {
-                setLoading(false);
-            }
-        };
+    // app/ternak/page.tsx - update fetchAllTernaks
 
-        fetchAllTernaks();
-    }, []);
+useEffect(() => {
+    const fetchAllTernaks = async () => {
+        try {
+            setLoading(true);
+            let currentPageNum = 1;
+            let lastPage = 1;
+            let allData: Ternak[] = [];
+            
+            do {
+                const response = await ternakApi.getAll(currentPageNum);
+                const ternakData: Ternak[] = response.data;
+                allData = [...allData, ...ternakData];
+                lastPage = response.meta?.last_page || 1;
+                currentPageNum++;
+            } while (currentPageNum <= lastPage);
+            
+            // 🔄 URUTKAN RANDOM (acak)
+            const shuffledData = [...allData];
+            for (let i = shuffledData.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledData[i], shuffledData[j]] = [shuffledData[j], shuffledData[i]];
+            }
+            setAllTernaks(shuffledData);
+            
+            // ATAU 🔄 URUTKAN BERDASARKAN TANGGAL TERBARU
+            // const sortedByDate = [...allData].sort((a, b) => {
+            //     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            // });
+            // setAllTernaks(sortedByDate);
+            
+            // Ambil unique kategori dan jenis
+            const uniqueKategori: string[] = [];
+            const uniqueJenis: string[] = [];
+            
+            allData.forEach((t: Ternak) => {
+                const kategoriValue = getKategoriString(t.kategori);
+                if (kategoriValue && !uniqueKategori.includes(kategoriValue)) {
+                    uniqueKategori.push(kategoriValue);
+                }
+                if (t.jenis_ternak && !uniqueJenis.includes(t.jenis_ternak)) {
+                    uniqueJenis.push(t.jenis_ternak);
+                }
+            });
+            
+            setKategoriOptions(uniqueKategori);
+            setJenisOptions(uniqueJenis);
+        } catch (err) {
+            console.error('Error:', err);
+            setError('Gagal memuat data ternak');
+            setAllTernaks([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchAllTernaks();
+}, []);
 
     // Filter logic on ALL data
     const filteredTernaks = allTernaks.filter(ternak => {
@@ -70,7 +109,10 @@ export default function TernakListPage() {
             ternak.kode_ternak?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             ternak.jenis_ternak?.toLowerCase().includes(searchQuery.toLowerCase());
         
-        const matchKategori = !selectedKategori || ternak.kategori === selectedKategori;
+        // Handle kategori yang bisa berupa string atau object
+        const kategoriValue = getKategoriString(ternak.kategori);
+        const matchKategori = !selectedKategori || kategoriValue === selectedKategori;
+        
         const matchJenis = !selectedJenis || ternak.jenis_ternak === selectedJenis;
         let matchTanggal = true;
         
@@ -94,20 +136,6 @@ export default function TernakListPage() {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentTernaks = filteredTernaks.slice(indexOfFirstItem, indexOfLastItem);
 
-    const handleNextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(prev => prev + 1);
-            window.scrollTo({ top: 600, behavior: 'smooth' });
-        }
-    };
-
-    const handlePrevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(prev => prev - 1);
-            window.scrollTo({ top: 600, behavior: 'smooth' });
-        }
-    };
-
     const resetFilters = () => {
         setSelectedKategori('');
         setSelectedJenis('');
@@ -116,13 +144,13 @@ export default function TernakListPage() {
         setCurrentPage(1);
     };
 
-    const getKategoriDisplay = (kategori: string) => {
-        const map: Record<string, string> = {
-            'regular': 'Regular',
-            'breeding': 'Breeding',
-            'fattening': 'Fattening'
-        };
-        return map[kategori] || kategori;
+    const handleSearchChange = (value: string) => {
+        setSearchQuery(value);
+        setCurrentPage(1);
+    };
+
+    const handleSearchSubmit = () => {
+        setCurrentPage(1);
     };
 
     if (loading) {
@@ -167,33 +195,13 @@ export default function TernakListPage() {
 
             {/* Search Bar */}
             <div className="container mx-auto px-4 max-w-3xl mb-8">
-                <div className="max-w-2xl mx-auto">
-                    <div className="flex gap-3">
-                        <div className="relative flex-1">
-                            <input
-                                type="text"
-                                placeholder="Cari ternak berdasarkan nama, kode, atau jenis..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-4 py-3 pr-10 border border-white/30 bg-white/10 backdrop-blur-sm text-white placeholder-white/60 rounded-lg focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
-                            />
-                            <svg 
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/60"
-                                fill="none" 
-                                stroke="currentColor" 
-                                viewBox="0 0 24 24"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <button
-                            onClick={() => setSearchQuery(searchQuery)}
-                            className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-semibold px-6 py-3 rounded-lg transition-all duration-300"
-                        >
-                            Search
-                        </button>
-                    </div>
-                </div>
+                <SearchBar 
+                    searchQuery={searchQuery}
+                    onSearchChange={handleSearchChange}
+                    onSearchSubmit={handleSearchSubmit}
+                    placeholder="Cari ternak berdasarkan nama, kode, atau jenis..."
+                    variant="dark"
+                />
             </div>
 
             {/* Filter Section */}
@@ -214,7 +222,7 @@ export default function TernakListPage() {
                         <option value="" className="text-gray-800 bg-green-900">Kategori</option>
                         {kategoriOptions.map((opt) => (
                             <option key={opt} value={opt} className="text-gray-800 bg-green-900">
-                                {getKategoriDisplay(opt)}
+                                {opt === 'regular' ? 'Regular' : opt === 'breeding' ? 'Breeding' : 'Fattening'}
                             </option>
                         ))}
                     </select>
@@ -296,97 +304,13 @@ export default function TernakListPage() {
                             ))}
                         </div>
 
-                        {/* PAGINATION - MAKS 3 NOMOR */}
-                        {totalPages > 1 && (
-                            <div className="flex justify-center items-center gap-4 mt-12">
-                                <button
-                                    onClick={handlePrevPage}
-                                    disabled={currentPage === 1}
-                                    className="px-6 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400 hover:text-gray-800 transition-all duration-300"
-                                >
-                                    Sebelumnya
-                                </button>
-                                
-                                <div className="flex gap-2">
-                                    {(() => {
-                                        const pages = [];
-                                        const maxVisible = 3;
-                                        
-                                        if (totalPages <= maxVisible) {
-                                            for (let i = 1; i <= totalPages; i++) {
-                                                pages.push(i);
-                                            }
-                                        } else {
-                                            pages.push(1);
-                                            
-                                            if (currentPage > 3) {
-                                                pages.push('...');
-                                            }
-                                            
-                                            let start = Math.max(2, currentPage - 1);
-                                            let end = Math.min(totalPages - 1, currentPage + 1);
-                                            
-                                            if (currentPage <= 3) {
-                                                start = 2;
-                                                end = 3;
-                                            }
-                                            
-                                            if (currentPage >= totalPages - 2) {
-                                                start = totalPages - 2;
-                                                end = totalPages - 1;
-                                            }
-                                            
-                                            for (let i = start; i <= end; i++) {
-                                                if (i !== 1 && i !== totalPages) {
-                                                    pages.push(i);
-                                                }
-                                            }
-                                            
-                                            if (currentPage < totalPages - 2) {
-                                                pages.push('...');
-                                            }
-                                            
-                                            if (totalPages !== 1) {
-                                                pages.push(totalPages);
-                                            }
-                                        }
-                                        
-                                        return pages.map((page, idx) => (
-                                            page === '...' ? (
-                                                <span key={`dots-${idx}`} className="w-10 h-10 flex items-center justify-center text-white">
-                                                    ...
-                                                </span>
-                                            ) : (
-                                                <button
-                                                    key={page}
-                                                    onClick={() => setCurrentPage(page as number)}
-                                                    className={`w-10 h-10 rounded-lg transition-all duration-300 ${
-                                                        currentPage === page
-                                                            ? 'bg-yellow-400 text-gray-800 font-bold'
-                                                            : 'bg-white/10 backdrop-blur-sm text-white hover:bg-yellow-400 hover:text-gray-800'
-                                                    }`}
-                                                >
-                                                    {page}
-                                                </button>
-                                            )
-                                        ));
-                                    })()}
-                                </div>
-                                
-                                <button
-                                    onClick={handleNextPage}
-                                    disabled={currentPage === totalPages}
-                                    className="px-6 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400 hover:text-gray-800 transition-all duration-300"
-                                >
-                                    Selanjutnya
-                                </button>
-                            </div>
-                        )}
-                        {totalPages > 1 && (
-                            <div className="text-center mt-4 text-white/50 text-sm">
-                                Halaman {currentPage} dari {totalPages}
-                            </div>
-                        )}
+                        {/* PAGINATION COMPONENT */}
+                        <Pagination 
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                            variant="dark"
+                        />
                     </>
                 )}
             </div>

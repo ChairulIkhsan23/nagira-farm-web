@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { artikelApi, Artikel } from '@/lib/api/endpoints/artikel';
 import ArtikelCard from '@/components/artikel/ArtikelCard';
 import PreviewArtikelCard from '@/components/artikel/PreviewArtikelCard';
+import SearchBar from '@/components/ui/SearchBar';
+import Pagination from '@/components/ui/Pagination';
 
 export default function ArtikelPage() {
     const [allArtikels, setAllArtikels] = useState<Artikel[]>([]);
@@ -53,17 +55,18 @@ export default function ArtikelPage() {
         setCurrentPage(1);
     };
 
-    const handleNextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(prev => prev + 1);
-            window.scrollTo({ top: 600, behavior: 'smooth' });
+    const handleSearchChange = (value: string) => {
+        setSearchQuery(value);
+        if (value === '') {
+            setShowAllArticles(false);
+            setCurrentPage(1);
         }
     };
 
-    const handlePrevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(prev => prev - 1);
-            window.scrollTo({ top: 600, behavior: 'smooth' });
+    const handleSearchSubmit = () => {
+        if (searchQuery) {
+            setShowAllArticles(true);
+            setCurrentPage(1);
         }
     };
 
@@ -97,7 +100,7 @@ export default function ArtikelPage() {
 
     return (
         <main className="min-h-screen bg-green-900">
-            {/* Hero Section - diperbesar padding bottomnya */}
+            {/* Hero Section */}
             <section className="relative pt-32 pb-32 md:pt-40 md:pb-40 overflow-hidden">
                 <div
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -119,47 +122,18 @@ export default function ArtikelPage() {
                         <p className="text-sm text-white/80 mb-2 font-medium text-left">
                             Cari Artikel dan Berita
                         </p>
-                        <div className="flex gap-3">
-                            <div className="relative flex-1">
-                                <input
-                                    type="text"
-                                    placeholder="Search..."
-                                    value={searchQuery}
-                                    onChange={(e) => {
-                                        setSearchQuery(e.target.value);
-                                        if (e.target.value === '') {
-                                            setShowAllArticles(false);
-                                            setCurrentPage(1);
-                                        }
-                                    }}
-                                    className="w-full px-4 py-3 pr-10 border border-white/30 bg-white/10 backdrop-blur-sm text-white placeholder-white/60 rounded-lg focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
-                                />
-                                <svg 
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/60"
-                                    fill="none" 
-                                    stroke="currentColor" 
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    if (searchQuery) {
-                                        setShowAllArticles(true);
-                                        setCurrentPage(1);
-                                    }
-                                }}
-                                className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-semibold px-6 py-3 rounded-lg transition-all duration-300"
-                            >
-                                Search
-                            </button>
-                        </div>
+                        <SearchBar 
+                            searchQuery={searchQuery}
+                            onSearchChange={handleSearchChange}
+                            onSearchSubmit={handleSearchSubmit}
+                            placeholder="Search..."
+                            variant="dark"
+                        />
                     </div>
                 </div>
             </section>
 
-            {/* PREVIEW SECTION - dengan background transparan dan jarak yang pas */}
+            {/* PREVIEW SECTION */}
             {previewArtikels.length > 0 && (
                 <div className="container mx-auto px-4 max-w-5xl -mt-16 mb-12 relative z-10">
                     <div className="flex justify-center items-center gap-8">
@@ -186,7 +160,7 @@ export default function ArtikelPage() {
                 </div>
             )}
 
-            {/* ALL ARTICLES SECTION - SEMUA ARTIKEL TAMPIL (termasuk yang di preview) */}
+            {/* ALL ARTICLES SECTION */}
             {(showAllArticles || searchQuery) && (
                 <div className="container mx-auto px-4 py-12 max-w-7xl">
                     <div className="flex justify-between items-center mb-8">
@@ -226,62 +200,13 @@ export default function ArtikelPage() {
                                 ))}
                             </div>
 
-                            {/* PAGINATION */}
-                            {totalPages > 1 && (
-                                <div className="flex justify-center items-center gap-4 mt-12">
-                                    <button
-                                        onClick={handlePrevPage}
-                                        disabled={currentPage === 1}
-                                        className="px-6 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400 hover:text-gray-800 transition-all duration-300"
-                                    >
-                                        Sebelumnya
-                                    </button>
-                                    
-                                    <div className="flex gap-2">
-                                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                            let pageNum;
-                                            if (totalPages <= 5) {
-                                                pageNum = i + 1;
-                                            } else if (currentPage <= 3) {
-                                                pageNum = i + 1;
-                                            } else if (currentPage >= totalPages - 2) {
-                                                pageNum = totalPages - 4 + i;
-                                            } else {
-                                                pageNum = currentPage - 2 + i;
-                                            }
-                                            
-                                            return (
-                                                <button
-                                                    key={pageNum}
-                                                    onClick={() => setCurrentPage(pageNum)}
-                                                    className={`w-10 h-10 rounded-lg transition-all duration-300 ${
-                                                        currentPage === pageNum
-                                                            ? 'bg-yellow-400 text-gray-800 font-bold'
-                                                            : 'bg-white/10 backdrop-blur-sm text-white hover:bg-yellow-400 hover:text-gray-800'
-                                                    }`}
-                                                >
-                                                    {pageNum}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                    
-                                    <button
-                                        onClick={handleNextPage}
-                                        disabled={currentPage === totalPages}
-                                        className="px-6 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400 hover:text-gray-800 transition-all duration-300"
-                                    >
-                                        Selanjutnya
-                                    </button>
-                                </div>
-                            )}
-                            
-                            {/* Info halaman */}
-                            {totalPages > 1 && (
-                                <div className="text-center mt-4 text-white/50 text-sm">
-                                    Halaman {currentPage} dari {totalPages}
-                                </div>
-                            )}
+                            {/* PAGINATION COMPONENT */}
+                            <Pagination 
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                                variant="dark"
+                            />
                         </>
                     )}
                 </div>

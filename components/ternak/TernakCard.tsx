@@ -1,4 +1,3 @@
-// components/ternak/TernakCard.tsx
 'use client';
 
 import Link from 'next/link';
@@ -10,31 +9,48 @@ interface TernakCardProps {
 }
 
 export default function TernakCard({ ternak }: TernakCardProps) {
-    const getKategoriDisplay = (kategori: string) => {
-        const map: Record<string, string> = {
-            'regular': 'Regular',
-            'breeding': 'Breeding',
-            'fattening': 'Fattening'
-        };
-        return map[kategori] || kategori;
+    console.log('Foto URL:', ternak.foto);
+    const getKategoriDisplay = (kategori: string | { value: string; label: string; badge_color: string }) => {
+        if (!kategori) return '-';
+        if (typeof kategori === 'string') {
+            const map: Record<string, string> = {
+                'regular': 'Regular',
+                'breeding': 'Breeding',
+                'fattening': 'Fattening'
+            };
+            return map[kategori] || kategori;
+        }
+        return kategori.label;
     };
 
-    const getStatusBadge = (status: string) => {
-        if (status === 'aktif') {
+    const getStatusBadge = (status: string | { value: string; badge_color: string }) => {
+        const statusValue = typeof status === 'string' ? status : status.value;
+        if (statusValue === 'aktif') {
             return <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Aktif</span>;
-        } else if (status === 'mati') {
+        } else if (statusValue === 'mati') {
             return <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">Mati</span>;
         } else {
             return <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">Terjual</span>;
         }
     };
 
-    const getGenderBadge = (gender: string) => {
-        if (gender === 'jantan') {
+    const getGenderBadge = (gender: string | { value: string; icon: string }) => {
+        const genderValue = typeof gender === 'string' ? gender : gender.value;
+        if (genderValue === 'jantan') {
             return <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">♂ Jantan</span>;
         } else {
             return <span className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded-full">♀ Betina</span>;
         }
+    };
+
+    // Fungsi untuk mendapatkan bobot yang benar (bobot terakhir untuk fattening)
+    const getBobotDisplay = (ternak: Ternak): number => {
+        // Jika ada data_kategori dan type fattening, pakai bobot_terakhir
+        if (ternak.data_kategori && ternak.data_kategori.type === 'fattening') {
+            const program = ternak.data_kategori.program;
+            return program.bobot_terakhir ?? ternak.bobot ?? 0;
+        }
+        return ternak.bobot ?? 0;
     };
 
     return (
@@ -49,6 +65,7 @@ export default function TernakCard({ ternak }: TernakCardProps) {
                             src={ternak.foto}
                             alt={ternak.nama_ternak || ternak.kode_ternak}
                             fill
+                            unoptimized
                             className="object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                     ) : (
@@ -89,7 +106,7 @@ export default function TernakCard({ ternak }: TernakCardProps) {
                         </div>
                         <div className="flex justify-between">
                             <span>Bobot:</span>
-                            <span className="font-medium text-green-600">{ternak.bobot} kg</span>
+                            <span className="font-medium text-green-600">{getBobotDisplay(ternak)} kg</span>
                         </div>
                     </div>
                     
