@@ -3,9 +3,6 @@ import type { ErrorResponse } from '@/types/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-// Ganti RequestBody dengan tipe yang lebih fleksibel
-type RequestBody = Record<string, unknown> | unknown[] | null;
-
 class ApiClient {
     private baseUrl: string;
 
@@ -18,7 +15,7 @@ class ApiClient {
         options: RequestInit = {}
     ): Promise<T> {
         const url = `${this.baseUrl}${endpoint}`;
-        
+
         const config: RequestInit = {
             headers: {
                 'Content-Type': 'application/json',
@@ -30,12 +27,12 @@ class ApiClient {
 
         try {
             const response = await fetch(url, config);
-            
+
             if (!response.ok) {
                 const error = await response.json().catch((): ErrorResponse => ({}));
                 throw new Error(error.message || `API Error: ${response.status}`);
             }
-            
+
             const data = await response.json();
             return data as T;
         } catch (error) {
@@ -52,6 +49,25 @@ class ApiClient {
     async post<T = unknown>(endpoint: string, body: unknown): Promise<T> {
         return this.request<T>(endpoint, {
             method: 'POST',
+            body: JSON.stringify(body),
+        });
+    }
+
+    // Tambahan method PUT, DELETE, PATCH (opsional)
+    async put<T = unknown>(endpoint: string, body: unknown): Promise<T> {
+        return this.request<T>(endpoint, {
+            method: 'PUT',
+            body: JSON.stringify(body),
+        });
+    }
+
+    async delete<T = unknown>(endpoint: string): Promise<T> {
+        return this.request<T>(endpoint, { method: 'DELETE' });
+    }
+
+    async patch<T = unknown>(endpoint: string, body: unknown): Promise<T> {
+        return this.request<T>(endpoint, {
+            method: 'PATCH',
             body: JSON.stringify(body),
         });
     }
