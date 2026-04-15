@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+// Hapus import Image, ganti dengan OptimizedImage
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { Ternak } from '@/lib/api/endpoints/ternak';
 
 interface TernakCardProps {
@@ -10,6 +11,16 @@ interface TernakCardProps {
 
 export default function TernakCard({ ternak }: TernakCardProps) {
     console.log('Foto URL:', ternak.foto);
+    
+    // Tambahkan fungsi getImageUrl
+    const getImageUrl = (path: string | null): string | null => {
+        if (!path) return null;
+        if (path.startsWith('http')) return path;
+        return `http://127.0.0.1:8000/storage/${path}`;
+    };
+
+    const imageUrl = getImageUrl(ternak.foto);
+    
     const getKategoriDisplay = (kategori: string | { value: string; label: string; badge_color: string }) => {
         if (!kategori) return '-';
         if (typeof kategori === 'string') {
@@ -60,12 +71,11 @@ export default function TernakCard({ ternak }: TernakCardProps) {
         >
             <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col">
                 <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-green-400 to-emerald-500">
-                    {ternak.foto ? (
-                        <Image
-                            src={ternak.foto}
+                    {imageUrl ? (
+                        <OptimizedImage
+                            src={imageUrl}
                             alt={ternak.nama_ternak || ternak.kode_ternak}
                             fill
-                            unoptimized
                             className="object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                     ) : (

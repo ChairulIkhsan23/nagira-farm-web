@@ -1,9 +1,10 @@
 // app/ternak/[slug]/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react'; // ← PERBAIKI INI
 import { useParams } from 'next/navigation';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
+// Hapus import Image karena tidak dipakai
 import Link from 'next/link';
 // Import tipe yang sudah didefinisikan
 import { 
@@ -51,6 +52,14 @@ export default function TernakDetailPage() {
     const [ternak, setTernak] = useState<Ternak | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const getImageUrl = (path: string | null): string | null => {
+        if (!path) return null;
+        if (path.startsWith('http')) return path;
+        return `http://127.0.0.1:8000/storage/${path}`;
+    };
+    const imageUrl = useMemo(() => {
+        return getImageUrl(ternak?.foto ?? null);
+    }, [ternak?.foto]);
 
     useEffect(() => {
         const fetchTernak = async () => {
@@ -355,12 +364,11 @@ export default function TernakDetailPage() {
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     <div className="md:flex">
                         <div className="md:w-1/2 relative h-80 md:h-auto bg-gradient-to-br from-green-400 to-emerald-500">
-                            {ternak.foto ? (
-                                <Image
-                                    src={ternak.foto}
+                            {imageUrl ? (
+                                <OptimizedImage
+                                    src={imageUrl}
                                     alt={ternak.nama_ternak || ternak.kode_ternak}
                                     fill
-                                    unoptimized
                                     className="object-cover"
                                 />
                             ) : (
@@ -371,7 +379,6 @@ export default function TernakDetailPage() {
                                 </div>
                             )}
                         </div>
-
                         <div className="md:w-1/2 p-6 md:p-8">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
