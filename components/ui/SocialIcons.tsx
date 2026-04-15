@@ -5,9 +5,10 @@ import { SocialMedia } from '@/types';
 interface SocialIconsProps {
   socialMedia: SocialMedia[];
   className?: string;
+  iconColor?: string;
 }
 
-export default function SocialIcons({ socialMedia, className = '' }: SocialIconsProps) {
+export default function SocialIcons({ socialMedia, className = '', iconColor = '' }: SocialIconsProps) {
   const getIcon = (name: string): React.ReactNode => {
     const icons: Record<string, React.ReactNode> = {
       Instagram: (
@@ -53,7 +54,7 @@ export default function SocialIcons({ socialMedia, className = '' }: SocialIcons
             href={social.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-green-300 hover:text-white transition-all duration-200 transform hover:scale-110 block"
+            className={`${iconColor} hover:text-green-600 transition-all duration-200 transform hover:scale-110 block`}
             aria-label={social.name}
           >
             {getIcon(social.name)}
