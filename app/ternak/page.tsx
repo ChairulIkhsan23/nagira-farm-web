@@ -1,30 +1,62 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ternakApi, Ternak, KategoriTernak } from '@/lib/api/endpoints/ternak';
+import { ternakApi, Ternak } from '@/lib/api/endpoints/ternak';
 import TernakCard from '@/components/ternak/TernakCard';
 import SearchBar from '@/components/ui/SearchBar';
 import Pagination from '@/components/ui/Pagination';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 
-// Helper function untuk mendapatkan nilai kategori sebagai string
+// Animasi variants untuk halaman list ternak
+const heroTextVariants: Variants = {
+    hidden: { opacity: 0, y: -30 },
+    visible: { 
+        opacity: 1, 
+        y: 0, 
+        transition: { duration: 0.6, type: "spring", stiffness: 100 } 
+    }
+};
+
+// Filter wrapper - sekali motion aja
+const filterWrapperVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+        opacity: 1, 
+        y: 0, 
+        transition: { duration: 0.5, delay: 0.4 }
+    }
+};
+
+const cardGridVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.08,
+            delayChildren: 0.3
+        }
+    }
+};
+
+const cardItemVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.9, rotateY: -10 },
+    visible: { 
+        opacity: 1, 
+        scale: 1, 
+        rotateY: 0,
+        transition: { 
+            type: "spring", 
+            stiffness: 200, 
+            damping: 20,
+            duration: 0.4
+        } 
+    },
+};
+
 const getKategoriString = (kategori: Ternak['kategori']): string => {
     if (!kategori) return '';
     if (typeof kategori === 'string') return kategori;
     return kategori.value;
-};
-
-// Helper function untuk mendapatkan label kategori
-const getKategoriLabel = (kategori: Ternak['kategori']): string => {
-    if (!kategori) return '';
-    if (typeof kategori === 'string') {
-        const map: Record<string, string> = {
-            'regular': 'Regular',
-            'breeding': 'Breeding',
-            'fattening': 'Fattening'
-        };
-        return map[kategori] || kategori;
-    }
-    return kategori.label;
 };
 
 export default function TernakListPage() {
@@ -42,74 +74,63 @@ export default function TernakListPage() {
     const [kategoriOptions, setKategoriOptions] = useState<string[]>([]);
     const [jenisOptions, setJenisOptions] = useState<string[]>([]);
 
-    // app/ternak/page.tsx - update fetchAllTernaks
-
-useEffect(() => {
-    const fetchAllTernaks = async () => {
-        try {
-            setLoading(true);
-            let currentPageNum = 1;
-            let lastPage = 1;
-            let allData: Ternak[] = [];
-            
-            do {
-                const response = await ternakApi.getAll(currentPageNum);
-                const ternakData: Ternak[] = response.data;
-                allData = [...allData, ...ternakData];
-                lastPage = response.meta?.last_page || 1;
-                currentPageNum++;
-            } while (currentPageNum <= lastPage);
-            
-            // 🔄 URUTKAN RANDOM (acak)
-            const shuffledData = [...allData];
-            for (let i = shuffledData.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffledData[i], shuffledData[j]] = [shuffledData[j], shuffledData[i]];
+    useEffect(() => {
+        const fetchAllTernaks = async () => {
+            try {
+                setLoading(true);
+                let currentPageNum = 1;
+                let lastPage = 1;
+                let allData: Ternak[] = [];
+                
+                do {
+                    const response = await ternakApi.getAll(currentPageNum);
+                    const ternakData: Ternak[] = response.data;
+                    allData = [...allData, ...ternakData];
+                    lastPage = response.meta?.last_page || 1;
+                    currentPageNum++;
+                } while (currentPageNum <= lastPage);
+                
+                // Acak data
+                const shuffledData = [...allData];
+                for (let i = shuffledData.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledData[i], shuffledData[j]] = [shuffledData[j], shuffledData[i]];
+                }
+                setAllTernaks(shuffledData);
+                
+                const uniqueKategori: string[] = [];
+                const uniqueJenis: string[] = [];
+                
+                allData.forEach((t: Ternak) => {
+                    const kategoriValue = getKategoriString(t.kategori);
+                    if (kategoriValue && !uniqueKategori.includes(kategoriValue)) {
+                        uniqueKategori.push(kategoriValue);
+                    }
+                    if (t.jenis_ternak && !uniqueJenis.includes(t.jenis_ternak)) {
+                        uniqueJenis.push(t.jenis_ternak);
+                    }
+                });
+                
+                setKategoriOptions(uniqueKategori);
+                setJenisOptions(uniqueJenis);
+            } catch (err) {
+                console.error('Error:', err);
+                setError('Gagal memuat data ternak');
+                setAllTernaks([]);
+            } finally {
+                setLoading(false);
             }
-            setAllTernaks(shuffledData);
-            
-            // ATAU 🔄 URUTKAN BERDASARKAN TANGGAL TERBARU
-            // const sortedByDate = [...allData].sort((a, b) => {
-            //     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-            // });
-            // setAllTernaks(sortedByDate);
-            
-            // Ambil unique kategori dan jenis
-            const uniqueKategori: string[] = [];
-            const uniqueJenis: string[] = [];
-            
-            allData.forEach((t: Ternak) => {
-                const kategoriValue = getKategoriString(t.kategori);
-                if (kategoriValue && !uniqueKategori.includes(kategoriValue)) {
-                    uniqueKategori.push(kategoriValue);
-                }
-                if (t.jenis_ternak && !uniqueJenis.includes(t.jenis_ternak)) {
-                    uniqueJenis.push(t.jenis_ternak);
-                }
-            });
-            
-            setKategoriOptions(uniqueKategori);
-            setJenisOptions(uniqueJenis);
-        } catch (err) {
-            console.error('Error:', err);
-            setError('Gagal memuat data ternak');
-            setAllTernaks([]);
-        } finally {
-            setLoading(false);
-        }
-    };
+        };
 
-    fetchAllTernaks();
-}, []);
+        fetchAllTernaks();
+    }, []);
 
-    // Filter logic on ALL data
     const filteredTernaks = allTernaks.filter(ternak => {
         const matchSearch = !searchQuery || 
             ternak.nama_ternak?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             ternak.kode_ternak?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             ternak.jenis_ternak?.toLowerCase().includes(searchQuery.toLowerCase());
         
-        // Handle kategori yang bisa berupa string atau object
         const kategoriValue = getKategoriString(ternak.kategori);
         const matchKategori = !selectedKategori || kategoriValue === selectedKategori;
         
@@ -130,7 +151,6 @@ useEffect(() => {
         return matchSearch && matchKategori && matchJenis && matchTanggal;
     });
 
-    // Pagination logic
     const totalPages = Math.ceil(filteredTernaks.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -156,10 +176,25 @@ useEffect(() => {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-green-900 pt-20">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
-                    <p className="mt-4 text-white">Memuat data ternak...</p>
-                </div>
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center"
+                >
+                    <motion.div 
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"
+                    ></motion.div>
+                    <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="mt-4 text-white"
+                    >
+                        Memuat data ternak...
+                    </motion.p>
+                </motion.div>
             </div>
         );
     }
@@ -167,34 +202,56 @@ useEffect(() => {
     if (error) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-green-900 pt-20">
-                <div className="text-red-400 text-center">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-red-400 text-center"
+                >
                     <p>{error}</p>
-                    <button 
+                    <motion.button 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => window.location.reload()}
                         className="mt-4 bg-yellow-400 hover:bg-yellow-500 text-gray-800 px-4 py-2 rounded-lg transition"
                     >
                         Coba Lagi
-                    </button>
-                </div>
+                    </motion.button>
+                </motion.div>
             </div>
         );
     }
 
     return (
-        <main className="min-h-screen bg-green-900 pt-20 md:pt-24">
+        <main className="min-h-screen bg-green-900 pt-20 md:pt-24 overflow-hidden">
+            {/* Hero Section */}
             <section className="py-12 md:py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                    <motion.h1 
+                        variants={heroTextVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="text-4xl md:text-5xl font-bold text-white mb-4"
+                    >
                         Koleksi <span className="text-white italic">Ternak Kami</span>
-                    </h1>
-                    <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+                    </motion.h1>
+                    <motion.p 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.6 }}
+                        className="text-lg text-gray-300 max-w-2xl mx-auto"
+                    >
                         Temukan berbagai jenis ternak unggulan dari Nagira Farm
-                    </p>
+                    </motion.p>
                 </div>
             </section>
 
             {/* Search Bar */}
-            <div className="container mx-auto px-4 max-w-3xl mb-8">
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="container mx-auto px-4 max-w-3xl mb-8"
+            >
                 <SearchBar 
                     searchQuery={searchQuery}
                     onSearchChange={handleSearchChange}
@@ -202,10 +259,15 @@ useEffect(() => {
                     placeholder="Cari ternak berdasarkan nama, kode, atau jenis..."
                     variant="dark"
                 />
-            </div>
+            </motion.div>
 
-            {/* Filter Section */}
-            <div className="container mx-auto px-4 max-w-7xl mb-8">
+            {/* Filter Section - Sekali motion aja */}
+            <motion.div 
+                variants={filterWrapperVariants}
+                initial="hidden"
+                animate="visible"
+                className="container mx-auto px-4 max-w-7xl mb-8"
+            >
                 <div className="flex flex-wrap items-center justify-center gap-3">
                     <select
                         value={selectedKategori}
@@ -265,7 +327,9 @@ useEffect(() => {
 
                     {/* Reset Filter Button */}
                     {(selectedKategori || selectedJenis || selectedTanggal || searchQuery) && (
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={resetFilters}
                             className="px-5 py-2.5 bg-red-500/80 hover:bg-red-600 backdrop-blur-sm text-white text-sm rounded-lg transition-all duration-300 flex items-center gap-2"
                         >
@@ -273,46 +337,82 @@ useEffect(() => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                             Reset Filter
-                        </button>
+                        </motion.button>
                     )}
                 </div>
-            </div>
+            </motion.div>
 
             {/* DAFTAR TERNAK SECTION */}
             <div className="container mx-auto px-4 py-8 max-w-7xl">
-                <div className="mb-6 text-right">
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="mb-6 text-right"
+                >
                     <p className="text-white/60 text-sm">
                         Menampilkan {currentTernaks.length} dari {filteredTernaks.length} ternak
                     </p>
-                </div>
+                </motion.div>
 
-                {currentTernaks.length === 0 ? (
-                    <div className="text-center py-12 bg-white/10 backdrop-blur-sm rounded-2xl">
-                        <p className="text-white/70">Tidak ada ternak yang sesuai dengan filter.</p>
-                        <button
-                            onClick={resetFilters}
-                            className="mt-4 text-yellow-400 hover:text-yellow-500 font-medium"
+                <AnimatePresence mode="wait">
+                    {currentTernaks.length === 0 ? (
+                        <motion.div 
+                            key="empty"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="text-center py-12 bg-white/10 backdrop-blur-sm rounded-2xl"
                         >
-                            Reset Filter
-                        </button>
-                    </div>
-                ) : (
-                    <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {currentTernaks.map((ternak) => (
-                                <TernakCard key={ternak.id} ternak={ternak} />
-                            ))}
-                        </div>
+                            <motion.p 
+                                animate={{ scale: [1, 1.05, 1] }}
+                                transition={{ duration: 1, repeat: Infinity }}
+                                className="text-white/70"
+                            >
+                                Tidak ada ternak yang sesuai dengan filter.
+                            </motion.p>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={resetFilters}
+                                className="mt-4 text-yellow-400 hover:text-yellow-500 font-medium"
+                            >
+                                Reset Filter
+                            </motion.button>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="cards"
+                            variants={cardGridVariants}
+                            initial="hidden"
+                            animate="visible"
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {currentTernaks.map((ternak) => (
+                                    <motion.div
+                                        key={ternak.id}
+                                        variants={cardItemVariants}
+                                    >
+                                        <TernakCard ternak={ternak} />
+                                    </motion.div>
+                                ))}
+                            </div>
 
-                        {/* PAGINATION COMPONENT */}
-                        <Pagination 
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={setCurrentPage}
-                            variant="dark"
-                        />
-                    </>
-                )}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.5 }}
+                            >
+                                <Pagination 
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={setCurrentPage}
+                                    variant="dark"
+                                />
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </main>
     );
