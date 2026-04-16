@@ -15,10 +15,9 @@ const nextConfig: NextConfig = {
         port: '8000',
         pathname: '/storage/ternak/**',
       },
-      // Optional: Untuk gambar dari luar (jika ada)
       {
         protocol: 'https',
-        hostname: '**', // Hati-hati dengan ini, lebih baik spesifik
+        hostname: '**',
       },
     ],
   },
