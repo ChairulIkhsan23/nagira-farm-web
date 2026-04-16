@@ -1,18 +1,38 @@
 'use client';
 
 import Link from 'next/link';
-// Hapus import Image, ganti dengan OptimizedImage
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import { Ternak } from '@/lib/api/endpoints/ternak';
+import { motion, Variants } from 'framer-motion';
 
 interface TernakCardProps {
     ternak: Ternak;
 }
 
+// Animasi variants - ZOOM OUT untuk card utama
+const cardVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { 
+        opacity: 1, 
+        scale: 1, 
+        transition: { duration: 0.5, ease: "easeOut" } 
+    },
+    hover: { 
+        scale: 1.02,
+        boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        transition: { duration: 0.2, ease: "easeOut" }
+    }
+};
+
+// Animasi untuk gambar di dalam card
+const imageVariants: Variants = {
+    hover: { 
+        scale: 1.1,
+        transition: { duration: 0.3, ease: "easeOut" }
+    }
+};
+
 export default function TernakCard({ ternak }: TernakCardProps) {
-    console.log('Foto URL:', ternak.foto);
-    
-    // Tambahkan fungsi getImageUrl
     const getImageUrl = (path: string | null): string | null => {
         if (!path) return null;
         if (path.startsWith('http')) return path;
@@ -54,9 +74,7 @@ export default function TernakCard({ ternak }: TernakCardProps) {
         }
     };
 
-    // Fungsi untuk mendapatkan bobot yang benar (bobot terakhir untuk fattening)
     const getBobotDisplay = (ternak: Ternak): number => {
-        // Jika ada data_kategori dan type fattening, pakai bobot_terakhir
         if (ternak.data_kategori && ternak.data_kategori.type === 'fattening') {
             const program = ternak.data_kategori.program;
             return program.bobot_terakhir ?? ternak.bobot ?? 0;
@@ -65,19 +83,29 @@ export default function TernakCard({ ternak }: TernakCardProps) {
     };
 
     return (
-        <Link 
-            href={`/ternak/${ternak.slug}`}
-            className="group"
-        >
-            <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+        <Link href={`/ternak/${ternak.slug}`} className="block">
+            <motion.div
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover="hover"
+                className="bg-white rounded-2xl overflow-hidden shadow-md h-full flex flex-col"
+            >
+                {/* Image Container */}
                 <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-green-400 to-emerald-500">
                     {imageUrl ? (
-                        <OptimizedImage
-                            src={imageUrl}
-                            alt={ternak.nama_ternak || ternak.kode_ternak}
-                            fill
-                            className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
+                        <motion.div
+                            variants={imageVariants}
+                            whileHover="hover"
+                            className="w-full h-full"
+                        >
+                            <OptimizedImage
+                                src={imageUrl}
+                                alt={ternak.nama_ternak || ternak.kode_ternak}
+                                fill
+                                className="object-cover"
+                            />
+                        </motion.div>
                     ) : (
                         <div className="flex items-center justify-center h-full text-white/50">
                             <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,25 +114,37 @@ export default function TernakCard({ ternak }: TernakCardProps) {
                         </div>
                     )}
                     
-                    {/* KATEGORI BADGE DI ATAS GAMBAR */}
+                    {/* KATEGORI BADGE - motion scale dari 0 ke 1 (spring) */}
                     {ternak.kategori && (
-                        <div className="absolute top-3 right-3">
-                            <span className="bg-black/50 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full group-hover:bg-black/70 group-hover:scale-105 transition-all duration-300">
+                        <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.15, type: "spring", stiffness: 260, damping: 20 }}
+                            className="absolute top-3 right-3"
+                        >
+                            <span className="bg-black/50 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full inline-block">
                                 {getKategoriDisplay(ternak.kategori)}
                             </span>
-                        </div>
+                        </motion.div>
                     )}
                 </div>
                 
+                {/* Content */}
                 <div className="p-4 flex-1 flex flex-col">
-                    <div className="flex gap-1.5 mb-3 w-full">
-                        <div className="flex-1 h-1 rounded-full bg-green-700 group-hover:bg-green-600 transition-colors"></div>
-                        <div className="flex-1 h-1 rounded-full bg-lime-400 group-hover:bg-lime-500 transition-colors"></div>
-                    </div>
+                    {/* LINE - motion scaleX dari 0 ke 1 */}
+                    <motion.div 
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ delay: 0.1, duration: 0.4, ease: "easeOut" }}
+                        className="flex gap-1.5 mb-3 w-full origin-left"
+                    >
+                        <div className="flex-1 h-1 rounded-full bg-green-700"></div>
+                        <div className="flex-1 h-1 rounded-full bg-lime-400"></div>
+                    </motion.div>
 
                     <div className="mb-2">
                         <p className="text-xs text-gray-400">{ternak.kode_ternak}</p>
-                        <h2 className="text-base font-bold text-gray-800 group-hover:text-green-700 transition-colors line-clamp-1">
+                        <h2 className="text-base font-bold text-gray-800 line-clamp-1">
                             {ternak.nama_ternak || 'Tanpa Nama'}
                         </h2>
                     </div>
@@ -116,7 +156,9 @@ export default function TernakCard({ ternak }: TernakCardProps) {
                         </div>
                         <div className="flex justify-between">
                             <span>Bobot:</span>
-                            <span className="font-medium text-green-600">{getBobotDisplay(ternak)} kg</span>
+                            <span className="font-medium text-green-600">
+                                {getBobotDisplay(ternak)} kg
+                            </span>
                         </div>
                     </div>
                     
@@ -125,7 +167,7 @@ export default function TernakCard({ ternak }: TernakCardProps) {
                         {getStatusBadge(ternak.status_aktif)}
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </Link>
     );
 }
