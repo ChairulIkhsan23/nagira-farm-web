@@ -1,14 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import OptimizedImage from '@/components/ui/OptimizedImage';
+import Image from 'next/image';
 import { Artikel } from '@/lib/api/endpoints/artikel';
 
-interface ArtikelCardProps {
+interface PreviewArtikelCardProps {
     artikel: Artikel;
+    isFirst?: boolean;
 }
 
-export default function ArtikelCard({ artikel }: ArtikelCardProps) {
+export default function PreviewArtikelCard({ artikel, isFirst = false }: PreviewArtikelCardProps) {
     const formatDate = (date: string | null) => {
         if (!date) return '-';
         return new Date(date).toLocaleDateString('id-ID', {
@@ -25,18 +26,25 @@ export default function ArtikelCard({ artikel }: ArtikelCardProps) {
     };
 
     const imageUrl = getImageUrl(artikel.foto);
-    
+    const cardWidth = isFirst ? 500 : 300;
+
     return (
         <Link href={`/artikel/${artikel.slug}`} className="group block">
-            <article className="bg-white rounded-2xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-xl h-full flex flex-col">
+            <article 
+                className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col"
+                style={{
+                    width: cardWidth,
+                }}
+            >
                 {/* Image Container */}
                 <div className="p-4 pb-0">
                     <div className="relative h-48 w-full overflow-hidden rounded-xl bg-gradient-to-br from-green-400 to-emerald-500">
-                        {imageUrl ? ( 
-                            <OptimizedImage
+                        {imageUrl ? (
+                            <Image
                                 src={imageUrl}
                                 alt={artikel.judul}
                                 fill
+                                unoptimized
                                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                             />
                         ) : (
@@ -71,8 +79,8 @@ export default function ArtikelCard({ artikel }: ArtikelCardProps) {
                     </h3>
                     
                     {/* Excerpt */}
-                    <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-3 flex-1 group-hover:text-gray-700 transition-colors duration-300">
-                        {artikel.excerpt || (artikel.isi ? artikel.isi.replace(/<[^>]*>/g, '').substring(0, 120) + '...' : '')}
+                    <p className="text-gray-600 text-sm leading-relaxed mb-3 flex-1 line-clamp-3 group-hover:text-gray-700 transition-colors duration-300">
+                        {artikel.excerpt || (artikel.isi ? artikel.isi.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : '')}
                     </p>
                     
                     {/* Date dan Baca Artikel Button */}
