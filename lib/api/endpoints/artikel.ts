@@ -1,4 +1,3 @@
-// lib/api/endpoints/artikel.ts
 import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -10,6 +9,15 @@ const api = axios.create({
         'Accept': 'application/json',
     },
 });
+
+// EXPORT KategoriArtikel INTERFACE
+export interface KategoriArtikel {
+    id: number;
+    slug: string;
+    nama_kategori: string;
+    created_at?: string;
+    updated_at?: string;
+}
 
 export interface Artikel {
     id: number;
@@ -27,28 +35,21 @@ export interface Artikel {
     meta_description: string | null;
     created_at: string;
     updated_at: string;
-    kategori: {
-        id: number;
-        slug: string;
-        nama_kategori: string;
-    };
+    kategori: KategoriArtikel; 
 }
 
 export const artikelApi = {
     // GET ALL ARTICLES dengan pagination
     getAll: async (page = 1) => {
         const response = await api.get(`/artikel?page=${page}`);
-        // Response: { success, message, data: { data: [...], meta } }
         return {
-            data: response.data.data.data, // Array artikel
-            meta: response.data.data.meta  // Info pagination
+            data: response.data.data.data, 
+            meta: response.data.data.meta 
         };
     },
     
-    // GET SINGLE ARTICLE by slug
     getBySlug: async (slug: string) => {
         const response = await api.get(`/artikel/${slug}`);
-        // Response: { success, message, data: { ...artikel } }
-        return response.data.data; // Langsung return object artikel
+        return response.data.data.article;
     }
 };

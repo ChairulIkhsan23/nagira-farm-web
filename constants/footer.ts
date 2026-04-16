@@ -14,9 +14,9 @@ export const DEFAULT_SECTIONS: FooterSection[] = [
     {
         title: 'Layanan',
         links: [
-            { title: 'Domba Siap Jual', url: '/produk/domba-siap-jual' },
-            { title: 'Indukan Premium', url: '/produk/indukan' },
-            { title: 'Anak Domba', url: '/produk/anak' },
+            { title: 'Domba Siap Jual', url: '/ternak/domba-siap-jual' },
+            { title: 'Indukan Premium', url: '/ternak/indukan' },
+            { title: 'Anak Domba', url: '/ternak/anak' },
             { title: 'Konsultasi Ternak', url: '/layanan/konsultasi' },
             { title: 'Pelatihan', url: '/layanan/pelatihan' }
         ]

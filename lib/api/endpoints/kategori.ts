@@ -1,4 +1,3 @@
-// lib/api/endpoints/kategori.ts
 import { apiClient } from '../client';
 import type { KategoriArtikel } from './artikel';
 

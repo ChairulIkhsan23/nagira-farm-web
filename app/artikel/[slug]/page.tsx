@@ -1,12 +1,11 @@
-// app/artikel/[slug]/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
-import Head from 'next/head';
 import { artikelApi, Artikel } from '@/lib/api/endpoints/artikel';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Tipe untuk error
 interface ApiError {
@@ -16,6 +15,53 @@ interface ApiError {
         data?: unknown;
     };
 }
+
+// Animasi variants - PERBAIKAN: menggunakan properti ease yang benar
+const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { 
+        opacity: 1, 
+        y: 0, 
+        transition: { 
+            duration: 0.6, 
+            ease: "easeOut" as const  // Tambahkan 'as const'
+        } 
+    }
+};
+
+const fadeIn = {
+    hidden: { opacity: 0 },
+    visible: { 
+        opacity: 1, 
+        transition: { 
+            duration: 0.5,
+            ease: "easeOut" as const
+        } 
+    }
+};
+
+const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.2,
+            delayChildren: 0.1
+        }
+    }
+};
+
+const imageVariants = {
+    hidden: { scale: 1.1, opacity: 0 },
+    visible: { 
+        scale: 1, 
+        opacity: 1, 
+        transition: { 
+            duration: 0.7, 
+            ease: "easeOut" as const
+        } 
+    }
+};
 
 export default function ArtikelDetailPage() {
     const params = useParams();
@@ -59,7 +105,6 @@ export default function ArtikelDetailPage() {
         });
     };
 
-    // Hitung waktu baca
     const getReadingTime = (content: string) => {
         if (!content) return '1 menit';
         const text = content.replace(/<[^>]*>/g, '');
@@ -68,26 +113,58 @@ export default function ArtikelDetailPage() {
         return `${minutes} menit`;
     };
 
+    const getImageUrl = (path: string | null): string | null => {
+        if (!path) return null;
+        if (path.startsWith('http')) return path;
+        return `http://127.0.0.1:8000/storage/${path}`;
+    };
+
+    const imageUrl = getImageUrl(artikel?.foto ?? null);
+
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Memuat artikel...</p>
-                </div>
+            <div className="flex justify-center items-center min-h-screen bg-gray-50 pt-20">
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center"
+                >
+                    <motion.div 
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"
+                    ></motion.div>
+                    <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="mt-4 text-gray-600"
+                    >
+                        Memuat artikel...
+                    </motion.p>
+                </motion.div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="text-red-500 text-center">
-                    <p>{error}</p>
-                    <Link href="/artikel" className="text-blue-600 mt-4 inline-block">
+            <div className="flex justify-center items-center min-h-screen bg-gray-50 pt-20">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-red-500 text-center"
+                >
+                    <motion.p
+                        animate={{ x: [-10, 10, -10, 10, 0] }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        {error}
+                    </motion.p>
+                    <Link href="/artikel" className="text-green-600 mt-4 inline-block">
                         ← Kembali ke daftar artikel
                     </Link>
-                </div>
+                </motion.div>
             </div>
         );
     }
@@ -96,126 +173,126 @@ export default function ArtikelDetailPage() {
         return notFound();
     }
 
-    // Buat URL gambar
-    const getImageUrl = (path: string | null) => {
-        if (!path) return null;
-        return `http://localhost:8000/storage/${path}`;
-    };
-
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-    const shareText = encodeURIComponent(`${artikel.judul} - ${shareUrl}`);
-
     return (
-        <>
-            <Head>
-                <title>{artikel.meta_title || artikel.judul} | Nagira Farm</title>
-                <meta name="description" content={artikel.meta_description || artikel.excerpt || ''} />
-                <meta property="og:title" content={artikel.judul} />
-                <meta property="og:description" content={artikel.meta_description || artikel.excerpt || ''} />
-                <meta property="og:type" content="article" />
-                {getImageUrl(artikel.og_image || artikel.foto) && (
-                    <meta property="og:image" content={getImageUrl(artikel.og_image || artikel.foto) || ''} />
-                )}
-            </Head>
-
-            <article className="container mx-auto px-4 py-8 max-w-4xl">
+        <article className="min-h-screen bg-gray-50 pt-20 md:pt-24 overflow-hidden">
+            <div className="container mx-auto px-4 py-8 max-w-4xl">
                 {/* Breadcrumb */}
-                <div className="mb-6 text-sm text-gray-500">
-                    <Link href="/" className="hover:text-blue-600">Home</Link>
+                <motion.div 
+                    initial="hidden"
+                    animate="visible"
+                    variants={fadeInUp}
+                    className="mb-6 text-sm text-gray-500"
+                >
+                    <Link href="/" className="hover:text-green-600 transition-colors">Home</Link>
                     <span className="mx-2">/</span>
-                    <Link href="/artikel" className="hover:text-blue-600">Artikel</Link>
+                    <Link href="/artikel" className="hover:text-green-600 transition-colors">Insight</Link>
                     <span className="mx-2">/</span>
                     <span className="text-gray-700">{artikel.judul}</span>
-                </div>
+                </motion.div>
 
                 {/* Header */}
-                <header className="mb-8">
-                    <div className="flex items-center gap-2 mb-4 flex-wrap">
+                <motion.header 
+                    initial="hidden"
+                    animate="visible"
+                    variants={staggerContainer}
+                    className="mb-8 bg-white rounded-xl p-6 shadow-sm"
+                >
+                    {/* kategori badge */}
+                    <motion.div variants={fadeInUp} className="flex items-center gap-2 mb-4 flex-wrap">
                         {artikel.kategori && (
-                            <Link 
-                                href={`/artikel?kategori=${artikel.kategori.slug}`}
-                                className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-200 transition"
+                            <motion.span 
+                                whileHover={{ scale: 1.05 }}
+                                className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium"
                             >
                                 {artikel.kategori.nama_kategori}
-                            </Link>
+                            </motion.span>
                         )}
-                        {artikel.is_featured === 1 && (
-                            <span className="text-sm bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full">
-                                Artikel Unggulan
-                            </span>
-                        )}
-                    </div>
+                    </motion.div>
                     
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4">{artikel.judul}</h1>
+                    <motion.h1 variants={fadeInUp} className="text-3xl md:text-4xl font-bold mb-4 text-gray-800">
+                        {artikel.judul}
+                    </motion.h1>
                     
-                    <div className="flex flex-wrap items-center gap-4 text-gray-500 text-sm border-b pb-4">
+                    <motion.div variants={fadeInUp} className="flex flex-wrap items-center gap-4 text-gray-500 text-sm">
                         <span>{formatDate(artikel.tanggal_publish || artikel.created_at)}</span>
                         <span>•</span>
                         <span>{artikel.views} views</span>
                         <span>•</span>
                         <span>Waktu baca: {getReadingTime(artikel.isi)}</span>
-                    </div>
-                </header>
+                    </motion.div>
+                </motion.header>
 
-                {/* Featured Image */}
-                {getImageUrl(artikel.foto) && (
-                    <div className="relative h-96 w-full mb-8 rounded-lg overflow-hidden shadow-lg">
-                        <Image
-                            src={getImageUrl(artikel.foto) || ''}
-                            alt={artikel.judul}
-                            fill
-                            className="object-cover"
-                            priority
+                {/* Content wrapper with white background */}
+                <motion.div 
+                    initial="hidden"
+                    animate="visible"
+                    variants={staggerContainer}
+                    className="bg-white rounded-xl shadow-sm overflow-hidden"
+                >
+                    {/* Featured Image */}
+                    {imageUrl && (
+                        <motion.div 
+                            variants={imageVariants}
+                            className="relative h-96 w-full overflow-hidden"
+                        >
+                            <OptimizedImage
+                                src={imageUrl}
+                                alt={artikel.judul}
+                                fill
+                                className="object-cover"
+                            />
+                        </motion.div>
+                    )}
+                    
+                    {/* Content body */}
+                    <motion.div variants={fadeInUp} className="p-6 md:p-8">
+                        {artikel.excerpt && (
+                            <motion.div 
+                                initial={{ x: -20, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                transition={{ delay: 0.3 }}
+                                className="bg-green-50 border-l-4 border-green-700 p-4 mb-6 italic text-gray-700 rounded-r"
+                            >
+                                {artikel.excerpt}
+                            </motion.div>
+                        )}
+
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.5, duration: 0.6 }}
+                            className="prose prose-lg prose-green max-w-none
+                                       prose-headings:text-gray-800 prose-headings:font-bold
+                                       prose-p:text-gray-600 prose-p:leading-relaxed
+                                       prose-a:text-green-700 prose-a:no-underline hover:prose-a:underline
+                                       prose-img:rounded-lg prose-img:shadow-md"
+                            dangerouslySetInnerHTML={{ __html: artikel.isi }}
                         />
-                    </div>
-                )}
-
-                {/* Excerpt (if exists) */}
-                {artikel.excerpt && (
-                    <div className="bg-gray-50 border-l-4 border-blue-500 p-4 mb-8 italic text-gray-700 rounded-r-lg">
-                        {artikel.excerpt}
-                    </div>
-                )}
-
-                {/* Main Content */}
-                <div 
-                    className="prose prose-lg prose-blue max-w-none
-                               prose-headings:font-bold prose-headings:text-gray-800
-                               prose-p:text-gray-600 prose-p:leading-relaxed
-                               prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
-                               prose-img:rounded-lg prose-img:shadow-md
-                               prose-ul:text-gray-600 prose-ol:text-gray-600"
-                    dangerouslySetInnerHTML={{ __html: artikel.isi }}
-                />
+                    </motion.div>
+                </motion.div>
 
                 {/* Footer */}
-                <footer className="mt-12 pt-6 border-t">
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <Link 
-                            href="/artikel" 
-                            className="text-blue-600 hover:underline flex items-center gap-2"
+                <motion.footer 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7 }}
+                    className="mt-8 pt-6 border-t border-gray-200"
+                >
+                    <div className="mt-8 text-center pb-12">
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                         >
-                            ← Kembali ke daftar artikel
-                        </Link>
-                        
-                        {/* Share buttons */}
-                        <div className="flex gap-2">
-                            <button 
-                                onClick={() => window.open(`https://wa.me/?text=${shareText}`)}
-                                className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition"
+                            <Link 
+                                href="/artikel" 
+                                className="inline-flex items-center gap-2 text-green-700 hover:text-lime-400 font-medium transition-colors"
                             >
-                                WhatsApp
-                            </button>
-                            <button 
-                                onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(artikel.judul)}&url=${encodeURIComponent(shareUrl)}`)}
-                                className="bg-blue-400 text-white px-3 py-1 rounded text-sm hover:bg-blue-500 transition"
-                            >
-                                Twitter
-                            </button>
-                        </div>
+                                ← Kembali ke daftar artikel
+                            </Link>
+                        </motion.div>
                     </div>
-                </footer>
-            </article>
-        </>
+                </motion.footer>
+            </div>
+        </article>
     );
 }

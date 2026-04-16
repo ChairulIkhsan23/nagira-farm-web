@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'localhost',
+        hostname: '127.0.0.1',
         port: '8000',
         pathname: '/storage/**',
       },
@@ -15,9 +15,10 @@ const nextConfig: NextConfig = {
         port: '8000',
         pathname: '/storage/ternak/**',
       },
+      // Optional: Untuk gambar dari luar (jika ada)
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: '**', // Hati-hati dengan ini, lebih baik spesifik
       },
     ],
   },
