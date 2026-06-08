@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
@@ -58,8 +59,8 @@ export default function ProductSection({ products }: ProductSectionProps) {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="text-center mt-14"
             >
-              <a
-                href="/produk"
+              <Link
+                href="/ternak"
                 className="group inline-flex items-center gap-3 bg-yellow-400 text-white hover:bg-yellow-500 font-semibold px-8 py-4 rounded-full shadow-md hover:shadow-yellow-500/30 transition-all duration-300 hover:-translate-y-0.5 text-base"
               >
                 <span>Lihat Produk Lain</span>
@@ -76,7 +77,7 @@ export default function ProductSection({ products }: ProductSectionProps) {
                     d="M7 7l5 5-5 5M13 7l5 5-5 5"
                   />
                 </svg>
-              </a>
+              </Link>
             </motion.div>
           </div>
         </div>

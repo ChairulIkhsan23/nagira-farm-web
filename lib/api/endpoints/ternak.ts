@@ -14,6 +14,11 @@ export interface JenisKelaminTernak {
     icon: string;
 }
 
+// Export alias untuk kemudahan
+export type JenisKelamin = string | JenisKelaminTernak;
+export type KategoriTernakType = string | KategoriTernak;
+export type StatusAktif = string;
+
 // Tipe untuk program penggemukan (fattening)
 export interface ProgramFattening {
     bobot_awal: number | null;
@@ -28,9 +33,21 @@ export interface ProgramFattening {
 
 // Tipe untuk data perkawinan (breeding)
 export interface PejantanInfo {
+    id?: number;
     nama: string;
     kode: string;
     slug: string;
+    nama_ternak?: string;
+    kode_ternak?: string;
+}
+
+export interface BetinaInfo {
+    id?: number;
+    nama: string;
+    kode: string;
+    slug: string;
+    nama_ternak?: string;
+    kode_ternak?: string;
 }
 
 export interface PerkawinanTerakhir {
@@ -41,6 +58,7 @@ export interface PerkawinanTerakhir {
     status_label: string;
     perkiraan_lahir: string | null;
     pejantan: PejantanInfo | null;
+    betina: BetinaInfo | null;
     keterangan: string | null;
     hari_menuju_lahir?: number;
 }
@@ -73,16 +91,60 @@ export interface Ternak {
     kode_ternak: string;
     nama_ternak: string;
     jenis_ternak: string;
-    kategori: string | KategoriTernak;
-    jenis_kelamin: string | JenisKelaminTernak;
+    kategori: KategoriTernakType;
+    jenis_kelamin: JenisKelamin;
     tanggal_lahir: string;
     bobot: number;
     foto: string | null;
-    status_aktif: string;
+    status_aktif: StatusAktif;
     created_at: string;
     updated_at: string;
     data_kategori?: DataKategori;
     riwayat_timbangan?: RiwayatTimbang[];
+    kelahirans?: Kelahiran[];
+    price_range?: {
+        min: number;
+        max: number;
+        label: string;
+    };
+}
+
+export interface FeaturedTernakJenis {
+    jenis_ternak: string;
+    jenis_slug: string;
+    foto: string | null;
+    jumlah_tersedia: number;
+    price_range: {
+        min: number;
+        max: number;
+        label: string;
+    };
+}
+
+export interface DetailAnak {
+    nama_ternak?: string;
+    jenis_kelamin: string;
+    kategori: string;
+    berat_lahir?: number | null;
+    status_aktif: string;
+}
+export interface Kelahiran {
+    id: number;
+    betina_id: number;
+    perkawinan_id: number | null;
+    tanggal_melahirkan: string;
+    tanggal_sapih: string | null;
+    umur_sapih_hari: number | null;
+    jumlah_anak_lahir: number;
+    jumlah_anak_hidup: number;
+    jumlah_anak_mati: number;
+    keterangan: string | null;
+    detail_anak: DetailAnak[];
+    created_at: string;
+    updated_at: string;
+    // Relasi
+    betina?: Ternak;
+    perkawinan?: PerkawinanTerakhir;
 }
 
 // Tipe untuk response API
@@ -98,6 +160,11 @@ export const ternakApi = {
             data: response.data.data.data,
             meta: response.data.data.meta
         };
+    },
+
+    getFeatured: async (limit = 6): Promise<FeaturedTernakJenis[]> => {
+        const response = await api.get(`/ternak/featured?limit=${limit}`);
+        return response.data.data;
     },
     
     getBySlug: async (slug: string): Promise<Ternak> => {

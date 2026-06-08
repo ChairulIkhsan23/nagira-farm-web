@@ -7,16 +7,24 @@ import { motion, Variants } from 'framer-motion';
 
 interface TernakCardProps {
     ternak: Ternak;
+    index?: number;
 }
 
-// Animasi variants - ZOOM OUT untuk card utama
+// Animasi variants - semua animasi dipindahkan ke sini
 const cardVariants: Variants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { 
+    hidden: { opacity: 0, scale: 0.8, rotateY: -10 },
+    visible: (delay: number) => ({ 
         opacity: 1, 
         scale: 1, 
-        transition: { duration: 0.5, ease: "easeOut" } 
-    },
+        rotateY: 0,
+        transition: { 
+            type: "spring", 
+            stiffness: 200, 
+            damping: 20,
+            duration: 0.4,
+            delay: delay
+        } 
+    }),
     hover: { 
         scale: 1.02,
         boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
@@ -32,7 +40,9 @@ const imageVariants: Variants = {
     }
 };
 
-export default function TernakCard({ ternak }: TernakCardProps) {
+export default function TernakCard({ ternak, index = 0 }: TernakCardProps) {
+    const delay = index * 0.05;
+
     const getImageUrl = (path: string | null): string | null => {
         if (!path) return null;
         if (path.startsWith('http')) return path;
@@ -40,20 +50,20 @@ export default function TernakCard({ ternak }: TernakCardProps) {
     };
 
     const imageUrl = getImageUrl(ternak.foto);
-    
+
     const getKategoriDisplay = (kategori: string | { value: string; label: string; badge_color: string }) => {
         if (!kategori) return '-';
         if (typeof kategori === 'string') {
             const map: Record<string, string> = {
-                'regular': 'Regular',
-                'breeding': 'Breeding',
-                'fattening': 'Fattening'
+                regular: 'Reguler',
+                breeding: 'Indukan',
+                fattening: 'Penggemukan',
             };
             return map[kategori] || kategori;
         }
         return kategori.label;
     };
-
+    
     const getStatusBadge = (status: string | { value: string; badge_color: string }) => {
         const statusValue = typeof status === 'string' ? status : status.value;
         if (statusValue === 'aktif') {
@@ -74,13 +84,7 @@ export default function TernakCard({ ternak }: TernakCardProps) {
         }
     };
 
-    const getBobotDisplay = (ternak: Ternak): number => {
-        if (ternak.data_kategori && ternak.data_kategori.type === 'fattening') {
-            const program = ternak.data_kategori.program;
-            return program.bobot_terakhir ?? ternak.bobot ?? 0;
-        }
-        return ternak.bobot ?? 0;
-    };
+    const getBobotDisplay = (ternak: Ternak): number => ternak.bobot ?? 0;
 
     return (
         <Link href={`/ternak/${ternak.slug}`} className="block">
@@ -89,6 +93,7 @@ export default function TernakCard({ ternak }: TernakCardProps) {
                 initial="hidden"
                 animate="visible"
                 whileHover="hover"
+                custom={delay}
                 className="bg-white rounded-2xl overflow-hidden shadow-md h-full flex flex-col"
             >
                 {/* Image Container */}
@@ -113,13 +118,12 @@ export default function TernakCard({ ternak }: TernakCardProps) {
                             </svg>
                         </div>
                     )}
-                    
-                    {/* KATEGORI BADGE - motion scale dari 0 ke 1 (spring) */}
+
                     {ternak.kategori && (
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            transition={{ delay: 0.15, type: "spring", stiffness: 260, damping: 20 }}
+                            transition={{ delay: 0.15 + delay, type: "spring", stiffness: 260, damping: 20 }}
                             className="absolute top-3 right-3"
                         >
                             <span className="bg-black/50 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full inline-block">
@@ -135,7 +139,7 @@ export default function TernakCard({ ternak }: TernakCardProps) {
                     <motion.div 
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
-                        transition={{ delay: 0.1, duration: 0.4, ease: "easeOut" }}
+                        transition={{ delay: 0.1 + delay, duration: 0.4, ease: "easeOut" }}
                         className="flex gap-1.5 mb-3 w-full origin-left"
                     >
                         <div className="flex-1 h-1 rounded-full bg-green-700"></div>

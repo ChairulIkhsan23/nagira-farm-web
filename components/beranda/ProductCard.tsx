@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
 
 export interface Product {
     id: number;
+    href: string;
     name: string;
     price: string;
     description: string;
@@ -73,8 +75,8 @@ export default function ProductCard({ product, index }: ProductCardProps) {
                         </p>
                         <p className="text-lg font-extrabold text-green-600">{product.price}</p>
                     </div>
-                    <a
-                        href={`/produk/${product.id}`}
+                    <Link
+                        href={product.href}
                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-600 hover:text-white border border-green-500 hover:bg-green-500 px-4 py-2 rounded-lg transition-all duration-200"
                     >
                         Detail
@@ -87,7 +89,7 @@ export default function ProductCard({ product, index }: ProductCardProps) {
                         >
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
-                    </a>
+                    </Link>
                 </div>
             </div>
         </motion.div>

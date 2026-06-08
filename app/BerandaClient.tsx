@@ -1,40 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import HeroSection from "@/components/beranda/HeroSection";
 import ProductSection from "@/components/beranda/ProductSection";
 import ArticleSection from "@/components/beranda/ArticleSection";
 import type { Product } from "@/components/beranda/ProductCard";
 import type { Article } from "@/components/beranda/ArticleSection";
-
-const products: Product[] = [
-  {
-    id: 1,
-    name: "Domba Garut",
-    price: "Rp 3.500.000",
-    description:
-      "Domba asli Garut dengan postur tegap, cocok untuk kurban dan budidaya.",
-    image: "/images/domba-garut.jpg",
-    badge: "Best Seller",
-  },
-  {
-    id: 2,
-    name: "Domba Arjuna",
-    price: "Rp 4.200.000",
-    description:
-      "Ras unggulan dengan bobot besar dan daging berkualitas premium.",
-    image: "/images/domba-arjuna.jpg",
-    badge: "Premium",
-  },
-  {
-    id: 3,
-    name: "Kambing Etawa",
-    price: "Rp 2.800.000",
-    description:
-      "Kambing perah produktif, penghasil susu tinggi dan mudah dipelihara.",
-    image: "/images/kambing-etawa.jpg",
-    badge: "Populer",
-  },
-];
+import { ternakApi, type FeaturedTernakJenis } from "@/lib/api/endpoints/ternak";
 
 const articles: Article[] = [
   {
@@ -71,6 +43,37 @@ const articles: Article[] = [
 
 // ─── Main Client Component ────────────────────────────────────
 export default function BerandaClient() {
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const getImageUrl = (path: string | null): string => {
+      if (!path) return "/images/bg-4.jpg";
+      if (path.startsWith("http")) return path;
+      return `http://127.0.0.1:8000/storage/${path}`;
+    };
+
+    const mapProduct = (featured: FeaturedTernakJenis, index: number): Product => ({
+      id: index + 1,
+      href: `/ternak?jenis=${encodeURIComponent(featured.jenis_ternak)}`,
+      name: featured.jenis_ternak,
+      price: featured.price_range.label,
+      description: `Tersedia ${featured.jumlah_tersedia} ekor ${featured.jenis_ternak} dengan kisaran harga terbaik.`,
+      image: getImageUrl(featured.foto),
+    });
+
+    const fetchProducts = async () => {
+      try {
+        const featured = await ternakApi.getFeatured(6);
+        setProducts(featured.map(mapProduct));
+      } catch (error) {
+        console.error("Gagal memuat produk unggulan:", error);
+        setProducts([]);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   return (
     <main className="min-h-screen bg-white font-sans antialiased">
       <HeroSection />
